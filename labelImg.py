@@ -48,6 +48,9 @@ from libs.create_ml_io import JSON_EXT
 from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
 
+from libs.plugins import EventType
+from plugins_demo import *
+
 __appname__ = 'labelImg'
 
 
@@ -72,6 +75,9 @@ class WindowMixin(object):
 
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
+    openPath = pyqtSignal(str)
+    modeChanged = pyqtSignal(str)
+    loadImage = pyqtSignal(str)
 
     def __init__(self, default_filename=None, default_prefdef_class_file=None, default_save_dir=None):
         super(MainWindow, self).__init__()
@@ -539,6 +545,23 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.file_path and os.path.isdir(self.file_path):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
+        self.plugins = []
+
+    def register_plugin(self, plugin_cls):
+        plugin = plugin_cls(self)
+        self.plugins.append(plugin)
+
+        if plugin.sub & EventType.NEW_SHAPE:
+            self.canvas.newShape.connect(plugin.on_event)
+        if plugin.sub & EventType.OPEN_PATH:
+            self.openPath.connect(plugin.on_event)
+        if plugin.sub & EventType.CVS_DOUBLE_CLICK:
+            self.canvas.doubleClick.connect(plugin.on_event)
+        if plugin.sub & EventType.MODE_CHANGED:
+            self.modeChanged.connect(plugin.on_event)
+        if plugin.sub & EventType.LOAD_IMAGE:
+            self.loadImage.connect(plugin.on_event)
+
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
             self.canvas.set_drawing_shape_to_square(False)
@@ -567,6 +590,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.actions.save_format.setIcon(new_icon("format_createml"))
             self.label_file_format = LabelFileFormat.CREATE_ML
             LabelFile.suffix = JSON_EXT
+        self.modeChanged.emit(LabelFile.suffix)
 
     def change_format(self):
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
@@ -720,6 +744,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.set_editing(edit)
         self.actions.createMode.setEnabled(edit)
         self.actions.editMode.setEnabled(not edit)
+        self.modeChanged.emit("")
 
     def set_create_mode(self):
         assert self.advanced()
@@ -764,7 +789,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def file_item_double_clicked(self, item=None):
-        self.cur_img_idx = self.m_img_list.index(ustr(item.text()))
+        self.cur_img_idx = self.file_list_widget.currentRow()
         filename = self.m_img_list[self.cur_img_idx]
         if filename:
             self.load_file(filename)
@@ -1167,6 +1192,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.label_list.item(self.label_list.count() - 1).setSelected(True)
 
             self.canvas.setFocus(True)
+            self.loadImage.emit(file_path)
             return True
         return False
 
@@ -1337,6 +1363,7 @@ class MainWindow(QMainWindow, WindowMixin):
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
+        self.openPath.emit(target_dir_path)
 
     def import_dir_images(self, dir_path):
         if not self.may_continue() or not dir_path:
@@ -1693,6 +1720,11 @@ def get_main_app(argv=None):
 def main():
     """construct main app and run it"""
     app, _win = get_main_app(sys.argv)
+    _win.register_plugin(OpenDirWithLabelPredefined)
+    _win.register_plugin(DoubleClickShapeToDel)
+    _win.register_plugin(MarkFilesHaveLabeled)
+    _win.register_plugin(FixSquareShortcut)
+    _win.register_plugin(AutoEnableCreateMode)
     return app.exec_()
 
 if __name__ == '__main__':

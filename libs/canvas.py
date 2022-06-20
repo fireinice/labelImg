@@ -29,6 +29,7 @@ class Canvas(QWidget):
     selectionChanged = pyqtSignal(bool)
     shapeMoved = pyqtSignal()
     drawingPolygon = pyqtSignal(bool)
+    doubleClick = pyqtSignal()
 
     CREATE, EDIT = list(range(2))
 
@@ -351,6 +352,7 @@ class Canvas(QWidget):
         if self.can_close_shape() and len(self.current) > 3:
             self.current.pop_point()
             self.finalise()
+        self.doubleClick.emit()
 
     def select_shape(self, shape):
         self.de_select_shape()
