@@ -143,7 +143,7 @@ class Shape(object):
             d *= size
         if self._highlight_index is not None:
             self.vertex_fill_color = self.h_vertex_fill_color
-        else:
+        elif self.vertex_fill_color is None:
             self.vertex_fill_color = Shape.vertex_fill_color
         if shape == self.P_SQUARE:
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)

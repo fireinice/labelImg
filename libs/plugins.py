@@ -31,13 +31,15 @@ class LabelImgPlugin(object):
             return self.latest_shape.label
         return None
 
-    def add_shapes(self, shapes):
+    def add_shapes(self, shapes, paint_label=False):
         if not isinstance(shapes, list):
             shapes = [shapes]
         for shape in shapes:
             # self.canvas.shapes.append(shape)
             # self.canvas.repaint()
             self.app.add_label(shape)
+            if paint_label:
+                shape.paint_label = True
         shapes.extend(self.canvas.shapes)
         self.canvas.load_shapes(shapes)
         self.app.set_dirty()
