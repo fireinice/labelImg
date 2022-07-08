@@ -78,6 +78,7 @@ class MainWindow(QMainWindow, WindowMixin):
     openPath = pyqtSignal(str)
     modeChanged = pyqtSignal(str)
     loadImage = pyqtSignal(str)
+    closeApp = pyqtSignal()
 
     def __init__(self, default_filename=None, default_prefdef_class_file=None, default_save_dir=None):
         super(MainWindow, self).__init__()
@@ -561,6 +562,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.modeChanged.connect(plugin.on_event)
         if plugin.sub & EventType.LOAD_IMAGE:
             self.loadImage.connect(plugin.on_event)
+        if plugin.sub & EventType.APP_CLOSE:
+            self.closeApp.connect(plugin.on_event)
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
@@ -1295,6 +1298,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_DRAW_SQUARE] = self.draw_squares_option.isChecked()
         settings[SETTING_LABEL_FILE_FORMAT] = self.label_file_format
         settings.save()
+        self.closeApp.emit()
 
     def load_recent(self, filename):
         if self.may_continue():

@@ -8,6 +8,7 @@ class EventType(Flag):
     NEW_SHAPE = auto()
     MODE_CHANGED = auto()
     CVS_DOUBLE_CLICK = auto()
+    APP_CLOSE = auto()
 
 
 class LabelImgPlugin(object):
