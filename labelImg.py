@@ -79,6 +79,7 @@ class MainWindow(QMainWindow, WindowMixin):
     modeChanged = pyqtSignal(str)
     loadImage = pyqtSignal(str)
     closeApp = pyqtSignal()
+    saveFile = pyqtSignal(str)
 
     def __init__(self, default_filename=None, default_prefdef_class_file=None, default_save_dir=None):
         super(MainWindow, self).__init__()
@@ -564,6 +565,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadImage.connect(plugin.on_event)
         if plugin.sub & EventType.APP_CLOSE:
             self.closeApp.connect(plugin.on_event)
+        if plugin.sub & EventType.SAVE_FILE:
+            self.saveFile.connect(plugin.on_event)
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
@@ -1514,6 +1517,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_clean()
             self.statusBar().showMessage('Saved to  %s' % annotation_file_path)
             self.statusBar().show()
+        self.saveFile.emit(annotation_file_path)
 
     def close_file(self, _value=False):
         if not self.may_continue():

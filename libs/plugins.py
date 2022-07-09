@@ -9,6 +9,7 @@ class EventType(Flag):
     MODE_CHANGED = auto()
     CVS_DOUBLE_CLICK = auto()
     APP_CLOSE = auto()
+    SAVE_FILE = auto()
 
 
 class LabelImgPlugin(object):
@@ -19,6 +20,19 @@ class LabelImgPlugin(object):
         "docstring"
         self.app = app
         self.canvas = app.canvas
+
+    def __getattr__(self, name):
+        "try self first then canvas then app"
+        prop = []
+        if hasattr(self.canvas, name):
+            prop.append(getattr(self.canvas, name))
+        if hasattr(self.app, name):
+            prop.append(getattr(self.app, name))
+        if len(prop) > 1:
+            raise Exception(
+                "{name} is ambiguous, \
+                please use self.app.{name} or self.canvas.{name}".format(name=name))
+        return prop[0]
 
     @property
     def latest_shape(self):
