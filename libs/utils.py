@@ -82,10 +82,12 @@ def format_shortcut(text):
 def generate_color_by_text(text):
     s = ustr(text)
     hash_code = int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16)
-    r = int((hash_code / 255) % 255)
-    g = int((hash_code / 65025) % 255)
-    b = int((hash_code / 16581375) % 255)
-    return QColor(r, g, b, 100)
+    h = int((hash_code / 255) % 255)
+    s = int((hash_code / 65025) % 135) + 120
+    # v = int((hash_code / 16581375) % 255)
+    color = QColor()
+    color.setHsv(h, s, 255, 180)
+    return color
 
 
 def have_qstring():
