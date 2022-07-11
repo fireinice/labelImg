@@ -23,16 +23,8 @@ class LabelImgPlugin(object):
 
     def __getattr__(self, name):
         "try self first then canvas then app"
-        prop = []
-        if hasattr(self.canvas, name):
-            prop.append(getattr(self.canvas, name))
         if hasattr(self.app, name):
-            prop.append(getattr(self.app, name))
-        if len(prop) > 1:
-            raise Exception(
-                "{name} is ambiguous, \
-                please use self.app.{name} or self.canvas.{name}".format(name=name))
-        return prop[0]
+            return getattr(self.app, name)
 
     @property
     def latest_shape(self):
