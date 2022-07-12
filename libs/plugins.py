@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 
 
 class EventType(Flag):
-    OPEN_PATH = auto()
+    OPEN_DIR = auto()
     LOAD_IMAGE = auto()
     NEW_SHAPE = auto()
     MODE_CHANGED = auto()
@@ -12,19 +12,67 @@ class EventType(Flag):
     SAVE_FILE = auto()
 
 
+class _PluginsGlobal(object):
+    def __init__(self, app, ns):
+        "docstring"
+        assert isinstance(ns, str)
+        self.__dict__["__ns"] = ns
+
+    def __key(self, name):
+        return self.__dict__["__ns"] + "__" + name
+
+    def __getattr__(self, name):
+        "try self first then canvas then app"
+        print("get")
+        print(self.__key(name))
+        return self.__dict__[self.__key(name)]
+
+    def __setattr__(self, name, value):
+        "try self first then canvas then app"
+        print("set")
+        print(self.__key(name))
+        self.__dict__[self.__key(name)] = value
+
+    
+
 class LabelImgPlugin(object):
     """Documentation for LabelImgPlugins
 
     """
     def __init__(self, app):
         "docstring"
-        self.app = app
-        self.canvas = app.canvas
+        self.__dict__['app'] = app
+        self.__ns = None
 
     def __getattr__(self, name):
         "try self first then canvas then app"
         if hasattr(self.app, name):
             return getattr(self.app, name)
+
+    def __setattr__(self, name, value):
+        "try self first then canvas then app"
+        if hasattr(self.app, name):
+            setattr(self.app, name, value)
+        else:
+            if name == "namespace":
+                self.set_namespace(value)
+            else:
+                self.__dict__[name] = value
+
+    @property
+    def globals(self):
+        if self.__ns is None:
+            raise RuntimeError("Need register plugin namespace before use globals")
+        return self.app.plugin_globals
+
+    @property
+    def namespace(self):
+        return self.__ns
+
+    def set_namespace(self, ns):
+        self.__ns = ns
+        if self.app.plugin_globals is None:
+            self.app.plugin_globals = _PluginsGlobal(self.app, self.__ns)
 
     @property
     def latest_shape(self):

@@ -8,7 +8,7 @@ class MarkFilesHaveLabeled(LabelImgPlugin):
 
     @property
     def sub(self):
-        return EventType.OPEN_PATH | EventType.MODE_CHANGED
+        return EventType.OPEN_DIR | EventType.MODE_CHANGED
 
     def _get_suffix(self):
         format = self.app.label_file_format
@@ -50,7 +50,7 @@ class OpenDirWithLabelPredefined(LabelImgPlugin):
 
     @property
     def sub(self):
-        return EventType.OPEN_PATH
+        return EventType.OPEN_DIR
 
     def _update_default_labels(self):
         self.app.default_label_combo_box.cb.addItems(self._new_labels)
@@ -83,7 +83,7 @@ class FixSquareShortcut(LabelImgPlugin):
 
     @property
     def sub(self):
-        return EventType.OPEN_PATH
+        return EventType.OPEN_DIR
 
     def on_event(self):
         self.app.toggle_draw_square()

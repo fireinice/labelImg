@@ -75,7 +75,7 @@ class WindowMixin(object):
 
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
-    openPath = pyqtSignal(str)
+    openDir = pyqtSignal(str)
     modeChanged = pyqtSignal(str)
     loadImage = pyqtSignal(str)
     closeApp = pyqtSignal()
@@ -548,15 +548,15 @@ class MainWindow(QMainWindow, WindowMixin):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
         self.plugins = []
+        self.plugin_globals = None
 
     def register_plugin(self, plugin_cls):
         plugin = plugin_cls(self)
         self.plugins.append(plugin)
-
         if plugin.sub & EventType.NEW_SHAPE:
             self.canvas.newShape.connect(plugin.on_event)
-        if plugin.sub & EventType.OPEN_PATH:
-            self.openPath.connect(plugin.on_event)
+        if plugin.sub & EventType.OPEN_DIR:
+            self.openDir.connect(plugin.on_event)
         if plugin.sub & EventType.CVS_DOUBLE_CLICK:
             self.canvas.doubleClick.connect(plugin.on_event)
         if plugin.sub & EventType.MODE_CHANGED:
@@ -1370,7 +1370,6 @@ class MainWindow(QMainWindow, WindowMixin):
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
-        self.openPath.emit(target_dir_path)
 
     def import_dir_images(self, dir_path):
         if not self.may_continue() or not dir_path:
@@ -1382,6 +1381,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.file_list_widget.clear()
         self.m_img_list = self.scan_all_images(dir_path)
         self.img_count = len(self.m_img_list)
+        self.openDir.emit(dir_path)
         self.open_next_image()
         for imgPath in self.m_img_list:
             item = QListWidgetItem(imgPath)
