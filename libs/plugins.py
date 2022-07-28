@@ -23,25 +23,19 @@ class _PluginsGlobal(object):
 
     def __getattr__(self, name):
         "try self first then canvas then app"
-        print("get")
-        print(self.__key(name))
         return self.__dict__[self.__key(name)]
 
     def __setattr__(self, name, value):
         "try self first then canvas then app"
-        print("set")
-        print(self.__key(name))
         self.__dict__[self.__key(name)] = value
 
-    
 
 class LabelImgPlugin(object):
-    """Documentation for LabelImgPlugins
+    """Documentation for LabelImgPlugins"""
 
-    """
     def __init__(self, app):
         "docstring"
-        self.__dict__['app'] = app
+        self.__dict__["app"] = app
         self.__ns = None
 
     def __getattr__(self, name):
@@ -95,6 +89,8 @@ class LabelImgPlugin(object):
             self.app.add_label(shape)
             if paint_label:
                 shape.paint_label = True
+        if not shapes:
+            return
         shapes.extend(self.canvas.shapes)
         self.canvas.load_shapes(shapes)
         self.app.set_dirty()
@@ -114,4 +110,3 @@ class LabelImgPlugin(object):
 
     def on_event(self):
         pass
-
